@@ -1,0 +1,41 @@
+na maquina namenode
+
+hadoop fs -copyFromLocal /input/*.csv /datasus/
+
+
+na maquina do hive
+
+set hive.exec.dynamic.partition.mode=nonstrict
+
+    CREATE TABLE covid19 (
+        regiao string,
+        estado string,
+        municipio string,
+        coduf int,
+        codRegiaoSaude int,
+        nomeRegiaoSaude string,
+        data string,
+        semanaEpi int,
+        populacaoTCU2019 int,
+        casosAcumulado int,
+        casosNovos int,
+        obitosAcumulado int,
+        obitosNovos int,
+        Recuperadosnovos int,
+        emAcompanhamentoNovos int,
+        interiorMetropolitana string
+        ) 
+        PARTITIONED BY (codmun int)
+        ROW FORMAT DELIMITED FIELDS TERMINATED BY '|' LINES TERMINATED BY '\n'
+        STORED AS TEXTFILE;
+
+
+LOAD DATA INPATH '/datasus/HIST_PAINEL_COVIDBR_2020_Parte1_06jul2021.csv' INTO TABLE covid19;
+LOAD DATA INPATH '/datasus/HIST_PAINEL_COVIDBR_2020_Parte2_06jul2021.csv' INTO TABLE covid19;
+LOAD DATA INPATH '/datasus/HIST_PAINEL_COVIDBR_2021_Parte1_06jul2021.csv' INTO TABLE covid19;
+LOAD DATA INPATH '/datasus/HIST_PAINEL_COVIDBR_2021_Parte2_06jul2021.csv' INTO TABLE covid19;
+
+CREATE TABLE covid19_otimizada PARTITIONED by (codmun int) as select regiao,estado,municipio,coduf,codRegiaoSaude,nomeRegiaoSaude,data,semanaEpi,populacaoTCU2019,casosAcumulado,casosNovos,obitosAcumulado,obitosNovos,Recuperadosnovos,emAcompanhamentoNovos,interiorMetropolitana,codmun from covid19 where codmun != null;
+
+insert overwrite table covid19_otimizada partition (codmun) select * from covid19;   	
+        	

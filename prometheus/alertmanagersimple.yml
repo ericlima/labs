@@ -1,0 +1,22 @@
+global:
+  resolve_timeout: 1m
+
+route:
+  group_by: ['alertname']
+  group_wait: 10s
+  group_interval: 10s
+  repeat_interval: 1m
+  receiver: 'slack_notifications'
+receivers:
+- name: 'slack_notifications'
+  slack_configs:
+  - api_url: "https://hooks.slack.com/services/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"
+    channel: '#beamevents-alerts'
+    send_resolved: true
+
+inhibit_rules:
+  - source_match:
+      severity: 'critical'
+    target_match:
+      severity: 'warning'
+    equal: ['alertname', 'dev', 'instance']
