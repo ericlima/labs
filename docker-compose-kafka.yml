@@ -1,6 +1,9 @@
 version: '3' 
-services:
 
+volumes:
+  postgres:
+  
+services:
   postgres:
     image: postgres
     container_name: postgres
@@ -62,3 +65,4 @@ services:
       resources:
         limits:
           memory: 200m
+
