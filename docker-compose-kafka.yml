@@ -1,6 +1,18 @@
 version: '3' 
 services:
 
+  postgres:
+    image: postgres
+    container_name: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    volumes:
+      - postgres:/data/postgres
+
   zookeeper:
     image: fjardim/zookeeper
     container_name: zookeeper
