@@ -1,10 +1,11 @@
 version: '3' 
 
 volumes:
-  kafka:
-
+  postgres_data:
+  kafka_data:
+  zookeeper_data:
+  
 services:
-
   postgres:
     image: postgres
     container_name: postgres
@@ -15,7 +16,7 @@ services:
       - "5432:5432"
     restart: unless-stopped
     volumes:
-      - postgres:/data/postgres
+      - postgres_data:/data/postgres
 
   zookeeper:
     image: fjardim/zookeeper
@@ -25,7 +26,7 @@ services:
     ports:
       - "2181:2181"
     volumes:
-      - ./data/zookeeper:/opt/zookeeper-3.4.6/data
+      - zookeeper_data:/opt/zookeeper-3.4.6/data
     deploy:
       resources:
         limits:
@@ -39,7 +40,7 @@ services:
     ports:
       - "9092:9092"
     volumes:
-      - ./data/kafka:/kafka/kafka-logs-kafka
+      - kafka_data:/kafka/kafka-logs-kafka
     depends_on:
       - zookeeper
     environment:
@@ -66,3 +67,4 @@ services:
       resources:
         limits:
           memory: 200m
+
