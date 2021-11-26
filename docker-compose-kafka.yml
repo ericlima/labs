@@ -1,4 +1,8 @@
 version: '3' 
+
+volumes:
+  kafka:
+
 services:
 
   postgres:

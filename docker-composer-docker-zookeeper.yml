@@ -1,0 +1,46 @@
+version: '3' 
+
+volumes:
+  kafka_data:
+  zookeeper_data:
+
+services:
+
+  zookeeper:
+    image: fjardim/zookeeper
+    container_name: zookeeper
+    hostname: zookeeper
+    restart: unless-stopped
+    ports:
+      - "2181:2181"
+    volumes:
+      - zookeeper_data:/opt/zookeeper-3.4.6/data
+
+  kafka:
+    image: fjardim/kafka
+    container_name: kafka
+    hostname: kafka
+    restart: unless-stopped
+    ports:
+      - "9092:9092"
+    volumes:
+      - kafka_data:/kafka/kafka-logs-kafka
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_ADVERTISED_HOST_NAME: kafka
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      ALLOW_PLAINTEXT_LISTENER: 'yes'
+
+  kafka-http:
+    image: confluentinc/cp-kafka-rest
+    container_name: kafka-rest
+    hostname: kafka-rest
+    restart: unless-stopped
+    environment:
+      - KAFKA_REST_BOOTSTRAP_SERVERS=kafka:9092
+    ports:
+      - "8082:8082"
+    depends_on:
+      - kafka
+    
