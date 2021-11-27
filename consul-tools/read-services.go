@@ -25,31 +25,29 @@ func main() {
     if err != nil {
         log.Fatal(err)
     }
-    //fmt.Println(responseData)
 
+    var nodes []string = obtemNodes(responseData)
+
+    for _,name := range nodes {
+        fmt.Println(name)
+    }
+
+}
+
+func obtemNodes(responseData []byte) []string{
+    var retorno []string
     var elementos []interface{}
-    
-    // json.Unmarshal([]byte(responseData), &elementos)
     json.Unmarshal(responseData, &elementos)
-
-    fmt.Println(elementos)
-
-    for field, val := range elementos {
-        fmt.Println("KV Pair: ", field, val)
+    for _, val := range elementos {
         if val != nil {
             elementosInternos := val.(map[string]interface{})
             for fieldInterno, valInterno := range elementosInternos {
-                fmt.Println("KV Pair interno: ", fieldInterno, valInterno)
+                if fieldInterno == "Node" {
+                    retorno = append(retorno, valInterno.(string))
+                }
             }
         }
-
     }
-
-    //var responseObject map[string][]string
-
-    //json.Unmarshal(responseData, &responseObject)
-   
-    //fmt.Println(responseObject)
-
+    return retorno
 }
 
