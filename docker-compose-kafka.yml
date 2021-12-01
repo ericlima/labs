@@ -68,3 +68,12 @@ services:
         limits:
           memory: 200m
 
+  redis-server: 
+    image: 'redis'
+    container_name: redis
+    hostname: redis
+    restart: unless-stopped
+    ports:
+      - 6379:6379
+
+      
