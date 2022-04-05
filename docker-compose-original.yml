@@ -97,26 +97,26 @@ services:
         limits:
           memory: 500m
 
-  # database:
-  #   image: fjardim/mysql
-  #   container_name: database
-  #   hostname: database
-  #   ports:
-  #       - "33061:3306"
-  #   deploy:
-  #     resources:
-  #       limits:
-  #         memory: 500m
-  #   command: mysqld --innodb-flush-method=O_DSYNC --innodb-use-native-aio=OFF --init-file /data/application/init.sql
-  #   volumes:
-  #       - ./data/mysql/data:/var/lib/mysql
-  #       - ./data/mysql/init.sql:/data/application/init.sql
-  #   environment:
-  #       MYSQL_ROOT_USER: root
-  #       MYSQL_ROOT_PASSWORD: secret
-  #       MYSQL_DATABASE: hue
-  #       MYSQL_USER: root
-  #       MYSQL_PASSWORD: secret
+  database:
+    image: fjardim/mysql
+    container_name: database
+    hostname: database
+    ports:
+        - "33061:3306"
+    deploy:
+      resources:
+        limits:
+          memory: 500m
+    command: mysqld --innodb-flush-method=O_DSYNC --innodb-use-native-aio=OFF --init-file /data/application/init.sql
+    volumes:
+        - ./data/mysql/data:/var/lib/mysql
+        - ./data/mysql/init.sql:/data/application/init.sql
+    environment:
+        MYSQL_ROOT_USER: root
+        MYSQL_ROOT_PASSWORD: secret
+        MYSQL_DATABASE: hue
+        MYSQL_USER: root
+        MYSQL_PASSWORD: secret
 
   zookeeper:
     image: fjardim/zookeeper
@@ -151,22 +151,22 @@ services:
         limits:
           memory: 500m
 
-  # hbase-master:
-  #   image: fjardim/hbase-master
-  #   container_name: hbase-master
-  #   hostname: hbase-master
-  #   env_file:
-  #     - ./configs/hbase/hbase-standalone.env
-  #   environment:
-  #     SERVICE_PRECONDITION: "namenode:50070 datanode:50075 zookeeper:2181"
-  #   ports:
-  #     - 16010:16010
-  #   depends_on:
-  #     - namenode
-  #   deploy:
-  #     resources:
-  #       limits:
-  #         memory: 500m
+  hbase-master:
+    image: fjardim/hbase-master
+    container_name: hbase-master
+    hostname: hbase-master
+    env_file:
+      - ./configs/hbase/hbase-standalone.env
+    environment:
+      SERVICE_PRECONDITION: "namenode:50070 datanode:50075 zookeeper:2181"
+    ports:
+      - 16010:16010
+    depends_on:
+      - namenode
+    deploy:
+      resources:
+        limits:
+          memory: 500m
   
   mongo:
     image: fjardim/mongo
