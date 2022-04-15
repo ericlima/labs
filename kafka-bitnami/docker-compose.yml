@@ -4,6 +4,7 @@ version: "2"
 services:
   zookeeper:
     image: docker.io/bitnami/zookeeper:3.7
+    container_name: zookeeper
     ports:
       - "2181:2181"
     volumes:
@@ -12,6 +13,7 @@ services:
       - ALLOW_ANONYMOUS_LOGIN=yes
   kafka:
     image: docker.io/bitnami/kafka:2
+    container_name: kafka
     ports:
       - "9092:9092"
     volumes:
@@ -21,7 +23,30 @@ services:
       - ALLOW_PLAINTEXT_LISTENER=yes
     depends_on:
       - zookeeper
-
+  kafka2:
+    image: docker.io/bitnami/kafka:2
+    container_name: kafka2
+    ports:
+      - "9093:9092"
+    volumes:
+      - "kafka_data:/bitnami"
+    environment:
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+      - ALLOW_PLAINTEXT_LISTENER=yes
+    depends_on:
+      - zookeeper
+  kafkamanager:
+      image: fjardim/kafkamanager
+      container_name: kafkamanager
+      hostname: kafkamanager
+      restart: unless-stopped
+      environment: 
+        ZK_HOSTS: zookeeper:2181
+      ports:
+        - 19000:9000
+      depends_on:
+        - kafka
+      
 volumes:
   zookeeper_data:
     driver: local

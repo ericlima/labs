@@ -1,0 +1,1 @@
+docker run --rm -ti -p 54320:5432/tcp -e POSTGRES_PASSWORD=postgres  dbziumdockerimages:postgresql
