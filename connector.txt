@@ -1,0 +1,25 @@
+# create connector
+# deploying connector [postgresql]
+curl -X POST -H "Content-Type: application/json" --data '{"name": "sink-postgresql-output-ksql-stream-music-enriched-4487a913", "config":
+{
+    "connector.class":"io.confluent.connect.jdbc.JdbcSinkConnector",
+    "tasks.max":"1",
+    "topics": "output-ksql-stream-music-enriched",
+    "key.converter": "org.apache.kafka.connect.storage.StringConverter",
+    "value.converter": "io.confluent.connect.avro.AvroConverter",
+    "value.converter.schema.registry.url": "http://localhost:8081",
+    "connection.url": "jdbc:postgresql://52.184.238.101:5432/music?user=postgres&password=6e8e5979-25c5-44e2-ad76-7a4e8ee68c6f",
+    "key.converter.schemas.enable": "false",
+    "value.converter.schemas.enable": "true",
+    "auto.create": "true",
+    "auto.evolve": "true",
+    "insert.mode": "upsert",
+    "pk.fields": "user_id",
+    "pk.mode": "record_key",
+    "batch.size": "30",
+    "transforms": "dropSysCols, insertTS",
+    "transforms.dropSysCols.type": "org.apache.kafka.connect.transforms.ReplaceField$Value",
+    "transforms.dropSysCols.blacklist": "ROWKEY,ROWTIME",
+    "transforms.insertTS.type":"org.apache.kafka.connect.transforms.InsertField$Value",
+    "transforms.insertTS.timestamp.field":"RECORD_TS"
+  }}' http://localhost:8083/connectors
