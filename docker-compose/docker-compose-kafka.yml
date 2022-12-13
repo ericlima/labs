@@ -4,6 +4,7 @@ volumes:
   postgres_data:
   kafka_data:
   zookeeper_data:
+  mongo_data:
   
 services:
   postgres:
@@ -51,23 +52,6 @@ services:
       resources:
         limits:
           memory: 500m
-
-  kafkamanager:
-    image: fjardim/kafkamanager
-    container_name: kafkamanager
-    hostname: kafkamanager
-    restart: unless-stopped
-    environment: 
-      ZK_HOSTS: zookeeper:2181
-    ports:
-      - 19000:9000
-    depends_on:
-      - kafka
-    deploy:
-      resources:
-        limits:
-          memory: 200m
-
   redis-server: 
     image: 'redis'
     container_name: redis
@@ -76,4 +60,36 @@ services:
     ports:
       - 6379:6379
 
+  mongo:
+    image: mongo
+    container_name: mongo
+    hostname: mongo
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
+    ports:
+      - 27017:27017
+    volumes:
+      - mongo_data:/data
+    deploy:
+      resources:
+        limits:
+          memory: 500m
+  mongo-express:
+    image: mongo-express
+    container_name: mongo_express
+    hostname: mongo_express
+    restart: unless-stopped
+    ports:
+      - 28081:8081
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: root
+      ME_CONFIG_MONGODB_ADMINPASSWORD: root
+      ME_CONFIG_MONGODB_SERVER: mongo
+    deploy:
+      resources:
+        limits:
+          memory: 200m
+ 
       
