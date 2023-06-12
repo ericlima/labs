@@ -1,0 +1,1 @@
+alias kubectl='sudo microk8s kubectl'
