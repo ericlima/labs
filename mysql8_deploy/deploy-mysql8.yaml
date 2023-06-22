@@ -1,0 +1,58 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mysql8-config
+data:
+  my.cnf: |
+    [mysqld]
+    skip_ssl=1
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql8
+spec:
+  selector:
+    app: mysql8
+  type: NodePort
+  ports:
+  - name: mysql8
+    protocol: TCP
+    port: 3306
+    targetPort: 3306
+    nodePort: 30011
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql8
+spec:
+  selector:
+    matchLabels:
+      app: mysql8
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: mysql8
+    spec:
+      containers:
+      - name: mysql8
+        image: mysql:8.0.28
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: password
+        ports:
+        - containerPort: 3306
+        volumeMounts:
+        - name: mysql8-config-volume
+          mountPath: /etc/mysql/conf.d
+        - name: mysql8-storage
+          mountPath: /var/lib/mysql
+      volumes:
+        - name: mysql8-storage
+          persistentVolumeClaim:
+            claimName: mysql8-pvc
+        - name: mysql8-config-volume
+          configMap:
+            name: mysql8-config

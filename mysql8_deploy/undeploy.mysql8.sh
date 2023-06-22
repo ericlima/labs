@@ -1,0 +1,1 @@
+sudo microk8s kubectl delete -f deploy-mysql8.yaml 
