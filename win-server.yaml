@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: servidor-windows
+spec:
+  containers:
+  - name: servidor-windows
+    image: mcr.microsoft.com/windows/servercore:ltsc2019
+    ports:
+    - containerPort: 80

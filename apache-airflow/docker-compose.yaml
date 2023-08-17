@@ -1,0 +1,13 @@
+version: '3'
+services:
+  airflow:
+    image: apache/airflow:2.1.1-python3.8
+    ports:
+      - '8089:8080'
+    volumes:
+      - './dags:/opt/airflow/dags'
+    command: >
+      bash -c 'airflow db init &&
+      airflow users create --username admin --password admin --firstname Eric --lastname Lima --role Admin --email eric.george.lima@gmail.com &&
+      airflow webserver &
+      airflow scheduler'
