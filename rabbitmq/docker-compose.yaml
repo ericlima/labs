@@ -12,9 +12,9 @@ services:
       - "5672:5672"
       - "15672:15672"
     networks:
-      - mynet
+      - labs
 
 networks:
-  mynet:
+  labs:
     driver: bridge
 
