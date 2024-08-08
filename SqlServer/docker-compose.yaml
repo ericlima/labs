@@ -12,6 +12,7 @@ services:
     restart: unless-stopped
     volumes:
       - sqlserver_data:/var/opt/mssql
+      - ./backup:/backup
     networks:
       - sqlserver_network
 
