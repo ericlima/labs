@@ -1,9 +1,7 @@
 version: '3' 
 
 volumes:
-  postgres_data:
-  kafka_data:
-  zookeeper_data:
+  mongo_data:
 
 services:
   mongo:
@@ -19,7 +17,7 @@ services:
     networks:
       - labs
     volumes:
-      - ./data/mongo:/data
+      - mongo_data:/data
     deploy:
       resources:
         limits:
