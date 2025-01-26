@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  oracle11g:
+    image: oracle-xe-11g   # Verifique a imagem no Docker Hub ou GitHub
+    container_name: oracle11g-container
+    ports:
+      - "1521:1521"           # Porta padrão do Oracle Database
+      - "8080:8080"           # Porta para o Oracle Enterprise Manager
+    environment:
+      - ORACLE_ALLOW_REMOTE=true  # Permitir conexões remotas
+      - ORACLE_DISABLE_ASYNCH_IO=true  # Desativar E/S assíncrona (opcional, para ambientes locais)
+      - ORACLE_ENABLE_XDB=true
+    volumes:
+      - oracle_data:/u01/app/oracle  # Persistência de dados
+
+volumes:
+  oracle_data:
+    driver: local
