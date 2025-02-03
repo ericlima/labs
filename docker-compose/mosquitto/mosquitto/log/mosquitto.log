@@ -1,0 +1,20 @@
+1733014480: mosquitto version 2.0.20 starting
+1733014480: Config loaded from /mosquitto/config/mosquitto.conf.
+1733014480: Starting in local only mode. Connections will only be possible from clients running on this machine.
+1733014480: Create a configuration file which defines a listener to allow remote access.
+1733014480: For more details see https://mosquitto.org/documentation/authentication-methods/
+1733014480: Opening ipv4 listen socket on port 1883.
+1733014480: Opening ipv6 listen socket on port 1883.
+1733014480: mosquitto version 2.0.20 running
+1733014668: mosquitto version 2.0.20 terminating
+1733014668: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1733014905: mosquitto version 2.0.20 starting
+1733014905: Config loaded from /mosquitto/config/mosquitto.conf.
+1733014905: Starting in local only mode. Connections will only be possible from clients running on this machine.
+1733014905: Create a configuration file which defines a listener to allow remote access.
+1733014905: For more details see https://mosquitto.org/documentation/authentication-methods/
+1733014905: Opening ipv4 listen socket on port 1883.
+1733014905: Opening ipv6 listen socket on port 1883.
+1733014905: mosquitto version 2.0.20 running
+1733014933: mosquitto version 2.0.20 terminating
+1733014933: Saving in-memory database to /mosquitto/data//mosquitto.db.

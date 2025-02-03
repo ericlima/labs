@@ -1,0 +1,30 @@
+version: "3.8"
+services:
+  node-red:
+    image: nodered/node-red
+    container_name: mynodered
+    ports:
+      - "1880:1880"
+    restart: unless-stopped
+    volumes:
+      - node_red_data:/data
+
+  mosquitto:
+    image: eclipse-mosquitto
+    container_name: mosquitto
+    hostname: mosquitto
+    ports:
+      - "1883:1883"
+      - "8883:8883"
+    restart: unless-stopped
+    volumes:
+      - mosquitto_data:/mosquitto/data
+      - mosquitto_config:/mosquitto/config
+      - mosquitto_log:/mosquitto/log
+    tty: true
+
+volumes:
+  node_red_data:
+  mosquitto_data:
+  mosquitto_config:
+  mosquitto_log:

@@ -1,0 +1,362 @@
+version: '3' 
+
+volumes:
+  postgres_data:
+  kafka_data:
+  zookeeper_data:
+
+services:
+
+  namenode:
+    image: fjardim/namenode_sqoop
+    container_name: namenode
+    hostname: namenode
+    restart: unless-stopped
+    volumes:
+      - ./data/hdfs/namenode:/hadoop/dfs/name
+      - ./input:/input
+    environment:
+      - CLUSTER_NAME=test
+    env_file:
+      - ./configs/hadoop/hadoop-hive.env
+    ports:
+      - "50070:50070"
+    deploy:
+      resources:
+        limits:
+          memory: 500m
+  
+  datanode:
+    image: fjardim/datanode
+    container_name: datanode
+    hostname: datanode
+    restart: unless-stopped
+    volumes:
+      - ./data/hdfs/datanode:/hadoop/dfs/data
+      - ./data/hadoop/bank:/bank
+    env_file:
+      - ./configs/hadoop/hadoop-hive.env
+    environment:
+      SERVICE_PRECONDITION: "namenode:50070"
+    depends_on:
+      - namenode
+    ports:
+      - "50075:50075"
+    deploy:
+      resources:
+        limits:
+          memory: 500m
+  
+  hive-server:
+    image: fjardim/hive
+    container_name: hive-server
+    hostname: hive_server
+    restart: unless-stopped
+    volumes:
+      - ./input:/input
+    env_file:
+      - ./configs/hadoop/hadoop-hive.env
+    environment:
+      HIVE_CORE_CONF_javax_jdo_option_ConnectionURL: "jdbc:postgresql://hive-metastore/metastore"
+      SERVICE_PRECONDITION: "hive-metastore:9083"
+    ports:
+      - "10000:10000"
+    depends_on:
+      - hive-metastore
+    deploy:
+      resources:
+        limits:
+          memory: 500m
+  
+  hive-metastore:
+    image: fjardim/hive
+    container_name: hive_metastore
+    hostname: hive_metastore
+    restart: unless-stopped
+    env_file:
+      - ./configs/hadoop/hadoop-hive.env
+    command: /opt/hive/bin/hive --service metastore
+    environment:
+      SERVICE_PRECONDITION: "namenode:50070 datanode:50075 hive-metastore-postgresql:5432"
+    ports:
+      - "9083:9083"
+    depends_on:
+      - hive-metastore-postgresql
+    deploy:
+      resources:
+        limits:
+          memory: 500m
+  
+  hive-metastore-postgresql:
+    image: fjardim/hive-metastore
+    container_name: hive-metastore-postgresql
+    hostname: hive_metastore_postgresql
+    restart: unless-stopped
+    volumes:
+      - ./data/postgresql:/var/lib/postgresql/data
+    depends_on:
+      - datanode
+    ports:
+      - "5432:5432"
+    deploy:
+      resources:
+        limits:
+          memory: 500m
+
+  database:
+    image: fjardim/mysql
+    container_name: database
+    hostname: database
+    ports:
+        - "33061:3306"
+    deploy:
+      resources:
+        limits:
+          memory: 500m
+    command: mysqld --innodb-flush-method=O_DSYNC --innodb-use-native-aio=OFF --init-file /data/application/init.sql
+    volumes:
+        - ./data/mysql/data:/var/lib/mysql
+        - ./data/mysql/init.sql:/data/application/init.sql
+    environment:
+        MYSQL_ROOT_USER: root
+        MYSQL_ROOT_PASSWORD: secret
+        MYSQL_DATABASE: hue
+        MYSQL_USER: root
+        MYSQL_PASSWORD: secret
+
+  # zookeeper:
+  #   image: fjardim/zookeeper
+  #   container_name: zookeeper
+  #   hostname: zookeeper
+  #   restart: unless-stopped
+  #   ports:
+  #     - "2181:2181"
+  #   volumes:
+  #     - ./data/zookeeper:/opt/zookeeper-3.4.6/data
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         memory: 500m
+
+  # kafka:
+  #   image: fjardim/kafka
+  #   container_name: kafka
+  #   hostname: kafka
+  #   restart: unless-stopped
+  #   ports:
+  #     - "9092:9092"
+  #   volumes:
+  #     - ./data/kafka:/kafka/kafka-logs-kafka
+  #   depends_on:
+  #     - zookeeper
+  #   environment:
+  #     KAFKA_ADVERTISED_HOST_NAME: kafka
+  #     KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         memory: 500m
+
+  hbase-master:
+    image: fjardim/hbase-master
+    container_name: hbase-master
+    hostname: hbase-master
+    env_file:
+      - ./configs/hbase/hbase-standalone.env
+    environment:
+      SERVICE_PRECONDITION: "namenode:50070 datanode:50075 zookeeper:2181"
+    ports:
+      - 16010:16010
+    depends_on:
+      - namenode
+    deploy:
+      resources:
+        limits:
+          memory: 500m
+  
+  # mongo:
+  #   image: fjardim/mongo
+  #   container_name: mongo
+  #   hostname: mongo
+  #   restart: unless-stopped
+  #   environment:
+  #     MONGO_INITDB_ROOT_USERNAME: root
+  #     MONGO_INITDB_ROOT_PASSWORD: root
+  #   ports:
+  #     - 27017:27017
+  #   volumes:
+  #     - ./data/mongo:/data
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         memory: 500m
+ 
+  # mongo-express:
+  #   image: fjardim/mongo-express
+  #   container_name: mongo_express
+  #   hostname: mongo_express
+  #   restart: unless-stopped
+  #   ports:
+  #     - 8081:8081
+  #   environment:
+  #     ME_CONFIG_MONGODB_ADMINUSERNAME: root
+  #     ME_CONFIG_MONGODB_ADMINPASSWORD: root
+  #     ME_CONFIG_MONGODB_SERVER: mongo
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         memory: 200m
+ 
+  # kafkamanager:
+  #   image: fjardim/kafkamanager
+  #   container_name: kafkamanager
+  #   hostname: kafkamanager
+  #   restart: unless-stopped
+  #   environment: 
+  #     ZK_HOSTS: zookeeper:2181
+  #   ports:
+  #     - 9000:9000
+  #   depends_on:
+  #     - kafka
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         memory: 200m
+
+  # elasticsearch:
+  #   image: docker.elastic.co/elasticsearch/elasticsearch:7.11.0
+  #   container_name: elasticsearch
+  #   hostname: elasticsearch
+  #   restart: unless-stopped
+  #   environment: 
+  #     xpack.security.enabled: "false"
+  #     discovery.type: single-node
+  #   ports:
+  #     - 9200:9200
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         memory: 500m
+
+  # kibana:
+  #   image: docker.elastic.co/kibana/kibana:7.11.0
+  #   container_name: kibana
+  #   hostname: kibana
+  #   restart: unless-stopped
+  #   environment: 
+  #     ELASTICSEARCH_HOSTS: "http://elasticsearch:9200"
+  #   ports:
+  #     - 5601:5601
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         memory: 200m          
+
+  jupyter-spark:
+    image: fjardim/jupyter-spark
+    hostname: jupyter-spark
+    container_name: jupyter-spark
+    restart: unless-stopped
+    command: notebook
+    env_file:
+      - ./configs/jupyter/jupyter.env
+    ports:
+      - 8889:8889
+      - 4040:4040
+      - 4041:4041
+      - 4042:4042
+      - 4043:4043
+    volumes:
+       - ./configs/notebooks:/mnt/notebooks/
+       - ./input:/input
+    environment:
+       SPARK_MASTER: local[*]
+       JUPYTER_PORT: 8889
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+
+  # cassandra-0:
+  #   image: cassandra:latest
+  #   hostname: cassandra-0
+  #   container_name: cassandra-0
+  #   restart: always
+  #   ports:
+  #     - 1700:7000
+  #     - 19042:9042
+  #   volumes:
+  #     - /home/cassandra-node-0/commitlog:/var/lib/cassandra/commitlog
+  #     - /home/cassandra-node-0/hints:/var/lib/cassandra/hints
+  #     - /home/cassandra-node-0/data:/var/lib/cassandra/data
+  #     - /home/cassandra-node-0/saved_caches:/var/lib/cassandra/saved_caches
+  #     - /home/cassandra-node-0/logs:/var/log/cassandra
+  #   environment:
+  #     - CASSANDRA_SEEDS=cassandra-0
+  #     - CASSANDRA_CLUSTER_NAME=cluster
+  #     - CASSANDRA_NUM_TOKENS=8
+  #     - CASSANDRA_DC=dc1
+  #     - CASSANDRA_RACK=rack0
+  #     - CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch
+  #     - MAX_HEAP_SIZE=8G
+  #     - HEAP_NEWSIZE=200M
+
+  # cassandra-1:
+  #   image: cassandra:latest
+  #   hostname: cassandra-1
+  #   container_name: cassandra-1
+  #   restart: always
+  #   ports:
+  #     - 27000:7000
+  #     - 29042:9042
+  #   volumes:
+  #     - /home/cassandra-node-1/data:/var/lib/cassandra/data
+  #     - /home/cassandra-node-1/commitlog:/var/lib/cassandra/commitlog
+  #     - /home/cassandra-node-1/hints:/var/lib/cassandra/hints
+  #     - /home/cassandra-node-1/saved_caches:/var/lib/cassandra/saved_caches
+  #     - /home/cassandra-node-1/logs:/var/log/cassandra
+  #   environment:
+  #     - CASSANDRA_SEEDS=cassandra-0
+  #     - CASSANDRA_CLUSTER_NAME=cluster
+  #     - CASSANDRA_NUM_TOKENS=8
+  #     - CASSANDRA_DC=dc1
+  #     - CASSANDRA_RACK=rack0
+  #     - CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch      
+  #     - MAX_HEAP_SIZE=8G
+  #     - HEAP_NEWSIZE=200M
+
+  # cassandra-2:
+  #   image: cassandra:latest
+  #   hostname: cassandra-2
+  #   container_name: cassandra-2
+  #   restart: always
+  #   ports:
+  #     - 37000:7000
+  #     - 39042:9042
+  #   volumes:
+  #     - /home/cassandra-node-2/data:/var/lib/cassandra/data
+  #     - /home/cassandra-node-2/commitlog:/var/lib/cassandra/commitlog
+  #     - /home/cassandra-node-2/hints:/var/lib/cassandra/hints
+  #     - /home/cassandra-node-2/saved_caches:/var/lib/cassandra/saved_caches
+  #     - /home/cassandra-node-2/logs:/var/log/cassandra      
+  #   environment:
+  #     - CASSANDRA_SEEDS=cassandra-0
+  #     - CASSANDRA_CLUSTER_NAME=cluster
+  #     - CASSANDRA_NUM_TOKENS=8
+  #     - CASSANDRA_DC=dc1
+  #     - CASSANDRA_RACK=rack0
+  #     - CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch
+  #     - MAX_HEAP_SIZE=8G
+  #     - HEAP_NEWSIZE=200M
+      
+  postgres:
+    image: postgres
+    container_name: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "54320:5432"
+    restart: always
+    volumes:
+      - postgres_data:/data/postgres
